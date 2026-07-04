@@ -15,7 +15,6 @@
     --ink:#2b2320;
     --muted:#8a7a70;
     --line:#f0e2d6;
-    --ok:#2f9e6e;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
@@ -113,37 +112,11 @@
     color:var(--muted);
     font-size:13px;
   }
-  footer a{color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;font:inherit}
-
-  /* admin */
-  .admin-gate{
-    max-width:420px;margin:80px auto;text-align:center;padding:0 20px;
-  }
-  .admin-gate .card{text-align:left}
-  .error{color:var(--coral-dark);font-size:14px;margin-top:10px;display:none}
-
-  .admin-wrap{max-width:760px}
-  .admin-top{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px}
-  .counter{
-    background:var(--coral);color:#fff;border-radius:999px;
-    padding:6px 16px;font-weight:700;font-size:14px;white-space:nowrap;
-  }
-  .idea{
-    background:var(--card);border:1px solid var(--line);border-radius:16px;
-    padding:18px 20px;margin-bottom:14px;
-  }
-  .idea .text{white-space:pre-wrap;font-size:16px}
-  .idea .meta{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-top:10px;gap:10px;flex-wrap:wrap}
-  .idea .who{font-weight:700;color:var(--coral-dark)}
-  .empty{text-align:center;color:var(--muted);padding:40px 0}
-  .loading{text-align:center;color:var(--muted);padding:40px 0}
-
-  [hidden]{display:none!important}
 </style>
 </head>
 <body>
 
-<div id="view-form" class="wrap">
+<div class="wrap">
   <header>
     <div class="emoji">💡</div>
     <h1>Банк идей</h1>
@@ -170,81 +143,16 @@
     <p>Руководитель обязательно её увидит.</p>
     <button id="againBtn">Поделиться ещё одной</button>
   </div>
-
-  <footer>
-    <button id="adminLink">Обзор (для владельца)</button>
-  </footer>
 </div>
 
-<div id="view-gate" class="admin-gate" hidden>
-  <div class="card">
-    <label for="codeInput">Код доступа к обзору</label>
-    <input type="text" id="codeInput" placeholder="Введите код" autocomplete="off" />
-    <div class="error" id="codeError">Неверный код</div>
-    <button class="primary" id="codeSubmit" style="margin-top:16px">Войти</button>
-  </div>
-  <footer><button id="backLink">← Назад к форме</button></footer>
-</div>
+<footer>Идеи попадают напрямую владельцу проекта</footer>
 
-<div id="view-admin" class="wrap admin-wrap" hidden>
-  <div class="admin-top">
-    <h1 style="font-size:24px">Обзор идей</h1>
-    <span class="counter" id="ideaCount">0 идей</span>
-  </div>
-  <div id="ideaList"><div class="loading">Загрузка…</div></div>
-  <footer><button id="logoutLink">← Выйти из обзора</button></footer>
-</div>
-
-<!-- Firebase (Firestore) — общее хранилище без сервера -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
-/* =====================================================================
-   НАСТРОЙКА (обязательно перед использованием):
-   1) Создай проект на https://console.firebase.google.com
-   2) Добавь веб-приложение, включи Firestore Database (production mode)
-   3) Вставь конфиг ниже вместо заглушки
-   4) В правилах Firestore разреши create всем, read — тоже всем
-      (код доступа ниже — это просто UI-замок, не серверная защита,
-      см. ограничения в prd.md)
-   ===================================================================== */
-const FIREBASE_CONFIG = {
-  apiKey: "ВСТАВЬ_СЮДА",
-  authDomain: "ВСТАВЬ_СЮДА.firebaseapp.com",
-  projectId: "ВСТАВЬ_СЮДА",
-  storageBucket: "ВСТАВЬ_СЮДА.appspot.com",
-  messagingSenderId: "ВСТАВЬ_СЮДА",
-  appId: "ВСТАВЬ_СЮДА"
-};
+/* Хранилище — Google Форма (владелец видит ответы во вкладке "Ответы" своей формы) */
+const GOOGLE_FORM_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSdJyzf7ysm9MiJ0THem1b0wkRw_zRlMHbVyp-om0w0TyFMeXw/formResponse";
+const ENTRY_IDEA = "entry.469381877";
+const ENTRY_NAME = "entry.1407858799";
 
-// Код доступа к приватному обзору (можно поменять на свой)
-const ACCESS_CODE = "идея2026";
-
-let db = null;
-const isConfigured = Object.values(FIREBASE_CONFIG).every(v => v && !String(v).includes("ВСТАВЬ_СЮДА"));
-if (isConfigured) {
-  try {
-    firebase.initializeApp(FIREBASE_CONFIG);
-    db = firebase.firestore();
-  } catch (e) {
-    console.warn("Firebase не настроен:", e);
-  }
-} else {
-  console.warn("Firebase не настроен: заполни FIREBASE_CONFIG в index.html");
-}
-
-const ideasCol = () => db.collection("ideas");
-
-// ---------- views ----------
-const viewForm = document.getElementById("view-form");
-const viewGate = document.getElementById("view-gate");
-const viewAdmin = document.getElementById("view-admin");
-
-function showOnly(el) {
-  [viewForm, viewGate, viewAdmin].forEach(v => v.hidden = (v !== el));
-}
-
-// ---------- submit form ----------
 const ideaForm = document.getElementById("ideaForm");
 const formCard = document.getElementById("formCard");
 const thanksCard = document.getElementById("thanksCard");
@@ -259,17 +167,15 @@ ideaForm.addEventListener("submit", async (e) => {
   submitBtn.disabled = true;
   submitBtn.textContent = "Отправляем…";
   try {
-    if (!db) throw new Error("Хранилище не настроено (заполни FIREBASE_CONFIG в index.html)");
-    await ideasCol().add({
-      text,
-      name: name || null,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
+    const fd = new FormData();
+    fd.append(ENTRY_IDEA, text);
+    fd.append(ENTRY_NAME, name);
+    await fetch(GOOGLE_FORM_ACTION, { method: "POST", mode: "no-cors", body: fd });
     formCard.hidden = true;
     thanksCard.hidden = false;
     ideaForm.reset();
   } catch (err) {
-    alert("Не получилось отправить: " + err.message);
+    alert("Не получилось отправить, попробуй ещё раз");
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = "Отправить идею";
@@ -280,67 +186,6 @@ document.getElementById("againBtn").addEventListener("click", () => {
   thanksCard.hidden = true;
   formCard.hidden = false;
 });
-
-// ---------- admin gate ----------
-document.getElementById("adminLink").addEventListener("click", () => {
-  showOnly(viewGate);
-  document.getElementById("codeInput").focus();
-});
-document.getElementById("backLink").addEventListener("click", () => showOnly(viewForm));
-document.getElementById("logoutLink").addEventListener("click", () => showOnly(viewForm));
-
-document.getElementById("codeSubmit").addEventListener("click", checkCode);
-document.getElementById("codeInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") checkCode();
-});
-
-function checkCode() {
-  const val = document.getElementById("codeInput").value;
-  const err = document.getElementById("codeError");
-  if (val === ACCESS_CODE) {
-    err.style.display = "none";
-    document.getElementById("codeInput").value = "";
-    showOnly(viewAdmin);
-    loadIdeas();
-  } else {
-    err.style.display = "block";
-  }
-}
-
-// ---------- admin list ----------
-async function loadIdeas() {
-  const listEl = document.getElementById("ideaList");
-  const countEl = document.getElementById("ideaCount");
-  listEl.innerHTML = '<div class="loading">Загрузка…</div>';
-  try {
-    if (!db) throw new Error("Хранилище не настроено (заполни FIREBASE_CONFIG в index.html)");
-    const snap = await ideasCol().orderBy("createdAt", "desc").get();
-    const docs = snap.docs;
-    countEl.textContent = docs.length + (docs.length === 1 ? " идея" : " идей");
-    if (!docs.length) {
-      listEl.innerHTML = '<div class="empty">Пока нет ни одной идеи</div>';
-      return;
-    }
-    listEl.innerHTML = docs.map(d => {
-      const v = d.data();
-      const dt = v.createdAt && v.createdAt.toDate ? v.createdAt.toDate() : null;
-      const dateStr = dt ? dt.toLocaleString("ru-RU", { dateStyle: "medium", timeStyle: "short" }) : "—";
-      return `<div class="idea">
-        <div class="text">${escapeHtml(v.text || "")}</div>
-        <div class="meta">
-          <span class="who">${v.name ? escapeHtml(v.name) : "Аноним"}</span>
-          <span>${dateStr}</span>
-        </div>
-      </div>`;
-    }).join("");
-  } catch (err) {
-    listEl.innerHTML = `<div class="empty">Ошибка загрузки: ${escapeHtml(err.message)}</div>`;
-  }
-}
-
-function escapeHtml(s) {
-  return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-}
 </script>
 </body>
 </html>
