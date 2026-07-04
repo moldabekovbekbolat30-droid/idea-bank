@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Банк идей</title>
+<meta name="description" content="Поделись проблемой или идеей — анонимно, без регистрации." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23ff6b4a'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='%23fff' font-family='Georgia,serif'%3E💡%3C/text%3E%3C/svg%3E" />
+<style>
+  :root{
+    --cream:#fff8f1;
+    --card:#ffffff;
+    --coral:#ff6b4a;
+    --coral-dark:#e2542f;
+    --ink:#2b2320;
+    --muted:#8a7a70;
+    --line:#f0e2d6;
+    --ok:#2f9e6e;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Nunito','IBM Plex Sans',system-ui,-apple-system,sans-serif;
+    font-size:17px;
+    line-height:1.55;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  h1,h2{font-family:Georgia,'Nunito',serif;font-weight:700;margin:0}
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding:32px 20px 24px;
+    width:100%;
+    flex:1;
+  }
+  header{
+    text-align:center;
+    margin-bottom:28px;
+  }
+  header .emoji{font-size:44px;line-height:1}
+  header h1{font-size:30px;color:var(--ink);margin-top:8px}
+  header p{color:var(--muted);font-size:16px;margin-top:8px}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:26px;
+    box-shadow:0 6px 24px rgba(226,84,47,.06);
+  }
+  label{display:block;font-weight:700;margin-bottom:8px;font-size:15px}
+  .hint{color:var(--muted);font-weight:400;font-size:13px;margin-left:6px}
+  textarea, input[type=text]{
+    width:100%;
+    border:2px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px;
+    font-family:inherit;
+    font-size:16px;
+    color:var(--ink);
+    background:#fffefc;
+    resize:vertical;
+    transition:.15s border-color;
+  }
+  textarea{min-height:140px}
+  textarea:focus, input[type=text]:focus{outline:none;border-color:var(--coral)}
+  .field{margin-bottom:20px}
+  .field:last-of-type{margin-bottom:24px}
+
+  button.primary{
+    width:100%;
+    background:var(--coral);
+    color:#fff;
+    border:none;
+    border-radius:14px;
+    padding:16px;
+    font-size:17px;
+    font-weight:700;
+    font-family:inherit;
+    cursor:pointer;
+    transition:.15s background,.1s transform;
+  }
+  button.primary:hover{background:var(--coral-dark)}
+  button.primary:active{transform:scale(.99)}
+  button.primary:disabled{opacity:.6;cursor:default}
+
+  .thanks{
+    text-align:center;
+    padding:40px 20px;
+  }
+  .thanks .emoji{font-size:56px}
+  .thanks h2{font-size:24px;margin-top:14px}
+  .thanks p{color:var(--muted);margin-top:8px}
+  .thanks button{
+    margin-top:22px;
+    background:none;
+    border:2px solid var(--coral);
+    color:var(--coral-dark);
+    border-radius:12px;
+    padding:10px 20px;
+    font-weight:700;
+    font-family:inherit;
+    cursor:pointer;
+  }
+
+  footer{
+    text-align:center;
+    padding:20px;
+    color:var(--muted);
+    font-size:13px;
+  }
+  footer a{color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;font:inherit}
+
+  /* admin */
+  .admin-gate{
+    max-width:420px;margin:80px auto;text-align:center;padding:0 20px;
+  }
+  .admin-gate .card{text-align:left}
+  .error{color:var(--coral-dark);font-size:14px;margin-top:10px;display:none}
+
+  .admin-wrap{max-width:760px}
+  .admin-top{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+  .counter{
+    background:var(--coral);color:#fff;border-radius:999px;
+    padding:6px 16px;font-weight:700;font-size:14px;white-space:nowrap;
+  }
+  .idea{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:18px 20px;margin-bottom:14px;
+  }
+  .idea .text{white-space:pre-wrap;font-size:16px}
+  .idea .meta{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-top:10px;gap:10px;flex-wrap:wrap}
+  .idea .who{font-weight:700;color:var(--coral-dark)}
+  .empty{text-align:center;color:var(--muted);padding:40px 0}
+  .loading{text-align:center;color:var(--muted);padding:40px 0}
+
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<div id="view-form" class="wrap">
+  <header>
+    <div class="emoji">💡</div>
+    <h1>Банк идей</h1>
+    <p>Есть проблема на работе или идея, как сделать лучше? Расскажи — коротко, своими словами. Анонимно, без регистрации.</p>
+  </header>
+
+  <div class="card" id="formCard">
+    <form id="ideaForm">
+      <div class="field">
+        <label for="ideaText">Твоя идея или проблема</label>
+        <textarea id="ideaText" required placeholder="Например: каждую неделю вручную свожу один и тот же отчёт в экселе — уходит полдня..."></textarea>
+      </div>
+      <div class="field">
+        <label for="ideaName">Имя или отдел <span class="hint">(необязательно)</span></label>
+        <input type="text" id="ideaName" placeholder="Например: Айгуль, бухгалтерия" />
+      </div>
+      <button type="submit" class="primary" id="submitBtn">Отправить идею</button>
+    </form>
+  </div>
+
+  <div class="card thanks" id="thanksCard" hidden>
+    <div class="emoji">🎉</div>
+    <h2>Спасибо! Идея сохранена</h2>
+    <p>Руководитель обязательно её увидит.</p>
+    <button id="againBtn">Поделиться ещё одной</button>
+  </div>
+
+  <footer>
+    <button id="adminLink">Обзор (для владельца)</button>
+  </footer>
+</div>
+
+<div id="view-gate" class="admin-gate" hidden>
+  <div class="card">
+    <label for="codeInput">Код доступа к обзору</label>
+    <input type="text" id="codeInput" placeholder="Введите код" autocomplete="off" />
+    <div class="error" id="codeError">Неверный код</div>
+    <button class="primary" id="codeSubmit" style="margin-top:16px">Войти</button>
+  </div>
+  <footer><button id="backLink">← Назад к форме</button></footer>
+</div>
+
+<div id="view-admin" class="wrap admin-wrap" hidden>
+  <div class="admin-top">
+    <h1 style="font-size:24px">Обзор идей</h1>
+    <span class="counter" id="ideaCount">0 идей</span>
+  </div>
+  <div id="ideaList"><div class="loading">Загрузка…</div></div>
+  <footer><button id="logoutLink">← Выйти из обзора</button></footer>
+</div>
+
+<!-- Firebase (Firestore) — общее хранилище без сервера -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* =====================================================================
+   НАСТРОЙКА (обязательно перед использованием):
+   1) Создай проект на https://console.firebase.google.com
+   2) Добавь веб-приложение, включи Firestore Database (production mode)
+   3) Вставь конфиг ниже вместо заглушки
+   4) В правилах Firestore разреши create всем, read — тоже всем
+      (код доступа ниже — это просто UI-замок, не серверная защита,
+      см. ограничения в prd.md)
+   ===================================================================== */
+const FIREBASE_CONFIG = {
+  apiKey: "ВСТАВЬ_СЮДА",
+  authDomain: "ВСТАВЬ_СЮДА.firebaseapp.com",
+  projectId: "ВСТАВЬ_СЮДА",
+  storageBucket: "ВСТАВЬ_СЮДА.appspot.com",
+  messagingSenderId: "ВСТАВЬ_СЮДА",
+  appId: "ВСТАВЬ_СЮДА"
+};
+
+// Код доступа к приватному обзору (можно поменять на свой)
+const ACCESS_CODE = "идея2026";
+
+let db = null;
+const isConfigured = Object.values(FIREBASE_CONFIG).every(v => v && !String(v).includes("ВСТАВЬ_СЮДА"));
+if (isConfigured) {
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+  } catch (e) {
+    console.warn("Firebase не настроен:", e);
+  }
+} else {
+  console.warn("Firebase не настроен: заполни FIREBASE_CONFIG в index.html");
+}
+
+const ideasCol = () => db.collection("ideas");
+
+// ---------- views ----------
+const viewForm = document.getElementById("view-form");
+const viewGate = document.getElementById("view-gate");
+const viewAdmin = document.getElementById("view-admin");
+
+function showOnly(el) {
+  [viewForm, viewGate, viewAdmin].forEach(v => v.hidden = (v !== el));
+}
+
+// ---------- submit form ----------
+const ideaForm = document.getElementById("ideaForm");
+const formCard = document.getElementById("formCard");
+const thanksCard = document.getElementById("thanksCard");
+const submitBtn = document.getElementById("submitBtn");
+
+ideaForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const text = document.getElementById("ideaText").value.trim();
+  const name = document.getElementById("ideaName").value.trim();
+  if (!text) return;
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Отправляем…";
+  try {
+    if (!db) throw new Error("Хранилище не настроено (заполни FIREBASE_CONFIG в index.html)");
+    await ideasCol().add({
+      text,
+      name: name || null,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    formCard.hidden = true;
+    thanksCard.hidden = false;
+    ideaForm.reset();
+  } catch (err) {
+    alert("Не получилось отправить: " + err.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Отправить идею";
+  }
+});
+
+document.getElementById("againBtn").addEventListener("click", () => {
+  thanksCard.hidden = true;
+  formCard.hidden = false;
+});
+
+// ---------- admin gate ----------
+document.getElementById("adminLink").addEventListener("click", () => {
+  showOnly(viewGate);
+  document.getElementById("codeInput").focus();
+});
+document.getElementById("backLink").addEventListener("click", () => showOnly(viewForm));
+document.getElementById("logoutLink").addEventListener("click", () => showOnly(viewForm));
+
+document.getElementById("codeSubmit").addEventListener("click", checkCode);
+document.getElementById("codeInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") checkCode();
+});
+
+function checkCode() {
+  const val = document.getElementById("codeInput").value;
+  const err = document.getElementById("codeError");
+  if (val === ACCESS_CODE) {
+    err.style.display = "none";
+    document.getElementById("codeInput").value = "";
+    showOnly(viewAdmin);
+    loadIdeas();
+  } else {
+    err.style.display = "block";
+  }
+}
+
+// ---------- admin list ----------
+async function loadIdeas() {
+  const listEl = document.getElementById("ideaList");
+  const countEl = document.getElementById("ideaCount");
+  listEl.innerHTML = '<div class="loading">Загрузка…</div>';
+  try {
+    if (!db) throw new Error("Хранилище не настроено (заполни FIREBASE_CONFIG в index.html)");
+    const snap = await ideasCol().orderBy("createdAt", "desc").get();
+    const docs = snap.docs;
+    countEl.textContent = docs.length + (docs.length === 1 ? " идея" : " идей");
+    if (!docs.length) {
+      listEl.innerHTML = '<div class="empty">Пока нет ни одной идеи</div>';
+      return;
+    }
+    listEl.innerHTML = docs.map(d => {
+      const v = d.data();
+      const dt = v.createdAt && v.createdAt.toDate ? v.createdAt.toDate() : null;
+      const dateStr = dt ? dt.toLocaleString("ru-RU", { dateStyle: "medium", timeStyle: "short" }) : "—";
+      return `<div class="idea">
+        <div class="text">${escapeHtml(v.text || "")}</div>
+        <div class="meta">
+          <span class="who">${v.name ? escapeHtml(v.name) : "Аноним"}</span>
+          <span>${dateStr}</span>
+        </div>
+      </div>`;
+    }).join("");
+  } catch (err) {
+    listEl.innerHTML = `<div class="empty">Ошибка загрузки: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+</script>
+</body>
+</html>
